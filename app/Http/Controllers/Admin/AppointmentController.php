@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
+    //This can be used to dispplay all appointments
     public function show(Request $request)
     { 
         try{ 
@@ -69,6 +70,7 @@ class AppointmentController extends Controller
             'appointment_type' => 'required|string',
             'description'=> 'nullable' 
         ]);
+        try{
         $appointment = Appointment::findOrFail($id);
         $appointment->update($request->only('time','date','status','appointment_type', 'description'));  
         
@@ -77,6 +79,13 @@ class AppointmentController extends Controller
             'message' => 'All appointment is edited successfully',
             'status' => 'ok'
         ]);
+        }
+        catch(Exception $error )
+        {
+            return response()->json([
+                'error' => $error,
+             ]); 
+        }
     }
     public function delete($id)
     {
