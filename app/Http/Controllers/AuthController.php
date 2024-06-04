@@ -53,5 +53,13 @@ class AuthController extends Controller
             ]);
              
         }
+        else
+        {
+            return response()->json([
+               
+                'message' => 'please enter correct credential',
+                'status' => 'error'
+            ]);
+        }
     }
 }

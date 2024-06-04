@@ -12,8 +12,10 @@ use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
+    //Through this we can see the dashboard data on admin side
     public function index()
     {
+        //Through we can the user role count
         $user = User::where('role', 'user')->count();
         $appointmentsGroupedByDate = Appointment::select('date')
         ->get()
@@ -26,8 +28,11 @@ class AdminController extends Controller
         });
         // Calculate the average number of appointments per day
         $averageDailyAppointments = $totalAppointmentsPerDay->avg();
+        //Get the data of where the status of the patient is completed 
         $completedPatient = Appointment::where('status' , 'completed')->count();
+        //Through this we can get the details of todays appointment  
         $todayAppointment = Appointment::where('date',Carbon::today())->get();
+        //through this we can get the count of todays appointments
         $totalTodayAppointment = Appointment::where('date',Carbon::today())->count();
         
             return response()->json([
