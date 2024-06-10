@@ -16,7 +16,8 @@ class Medical_History extends Model
         'disease',
         'date',
         'medicine',
+        'file',
         'patient_id',
-        
+
     ];
 }

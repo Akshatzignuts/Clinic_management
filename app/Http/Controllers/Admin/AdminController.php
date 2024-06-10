@@ -7,7 +7,7 @@ use Exception;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Controller;    
 use Illuminate\Http\Request;
 
 class AdminController extends Controller

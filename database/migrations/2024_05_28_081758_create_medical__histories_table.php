@@ -17,6 +17,7 @@ return new class extends Migration
             $table->date('date');
             $table->json('medicine')->nullable();
             $table->unsignedBigInteger('patient_id');
+            $table->string('file');
             $table->foreign('patient_id')->references('id')->on('users');
             $table->timestamps();
         });

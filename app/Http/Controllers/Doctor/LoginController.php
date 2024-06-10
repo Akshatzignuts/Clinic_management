@@ -17,7 +17,7 @@ class LoginController extends Controller
             'password' => 'required|confirmed|min:8',
             'password_confirmation' => 'required'
         ]);
-        
+
         $token = $request->invitation_token;
         $user = User::where('invitation_token', $token)->first();
 

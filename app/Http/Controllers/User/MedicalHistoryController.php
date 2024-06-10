@@ -14,16 +14,26 @@ class MedicalHistoryController extends Controller
             'disease' => 'required|string',
             'date' => 'required|date_format:Y-m-d',
             'medicine' => 'nullable|array',
+            'file' => 'required|mimes:jpeg,png,jpg,gif,pdf,json|max:2048',
         ]);
+        
+        $file = $request->file('file');
+        $path = $file->store('uploads', 'public');
         //this can be used to add the medical history 
-        $medicalHistory = Medical_History::create($request->only('disease', 'date', 'medicine') + ['patient_id' => auth()->user()->id]);
+        $medicalHistory = Medical_History::create($request->only('disease', 'date', 'medicine') + [
+            'patient_id' => auth()->user()->id,
+            'file' => $path
+            ,
+            'medicine' => $request->input('medicine', [])
+        ]);
+
 
         $medicalHistory->save();
         return response()->json([
+            'Medical History' => $medicalHistory,
             'message' => 'medical history added successfully ',
             'status' => 'ok'
         ]);
-
     }
     public function view()
     {
@@ -43,7 +53,7 @@ class MedicalHistoryController extends Controller
             'medicine' => 'nullable|array',
         ]);
         $medicalHistory = Medical_History::findOrFail($id);
-        $medicalHistory->update($request->only('disease','date','medicine'));
+        $medicalHistory->update($request->only('disease', 'date', 'medicine'));
         return response()->json([
             'Medical History' => $medicalHistory,
             'message' => 'medical history edited successfully ',
@@ -52,22 +62,22 @@ class MedicalHistoryController extends Controller
     }
     public function delete($id)
     {
-       
+
         if (!auth()->check()) {
             return response()->json([
-                
+
                 'message' => 'You are not logged in',
                 'status' => 'ok'
             ]);
         }
-    
+
         // Retrieve the medical history record
         $medicalHistory = Medical_History::find($id);
-    
+
         // Check if the record exists and belongs to the logged in user
-        if (!$medicalHistory || $medicalHistory->patient_id!= auth()->id()) {
+        if (!$medicalHistory || $medicalHistory->patient_id != auth()->id()) {
             return response()->json([
-                
+
                 'message' => 'You are not logged in',
                 'status' => 'ok'
             ]);
