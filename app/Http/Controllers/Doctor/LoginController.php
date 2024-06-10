@@ -10,13 +10,14 @@ use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
+    //this function can be used to reset the password of the employee
     public function resetPassword(Request $request)
     {
         $request->validate([
             'password' => 'required|confirmed|min:8',
             'password_confirmation' => 'required'
         ]);
-
+        
         $token = $request->invitation_token;
         $user = User::where('invitation_token', $token)->first();
 

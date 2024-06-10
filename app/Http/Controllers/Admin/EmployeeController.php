@@ -17,6 +17,7 @@ class EmployeeController extends Controller
     {
         $filter = $request->input('filter'  ); 
         $search = $request->input('search');
+        //This can be used to search and filter the user 
         if($filter || $search)
         {
             $employees = User::where('role' , 'doctor')->when($filter, function ($query) use ($filter) {
@@ -30,6 +31,7 @@ class EmployeeController extends Controller
                 });
             })->paginate(10); // paginate the results with 10 results per page 
         }
+        //This can be used to dislay the all the user 
         else
         {
             $employees = User::where('role' , 'doctor')->paginate(10);
@@ -47,10 +49,10 @@ class EmployeeController extends Controller
             'role' => 'required|string|max:32',
             'gender' => 'required|string|max:32'
         ]);
-       
+       //this can be used to  create random password and invitation token
         $password = Str::random(10);
         $invitation_token = Str::random(30);
-        
+        //This can be used to store the data into database 
         $employee = User::create($request->only(['name','email','mobile_no','gender','status','role']) + 
         ['password' => $password, 'status' => 'invited','invitation_token' => $invitation_token]);
 
@@ -58,13 +60,12 @@ class EmployeeController extends Controller
             'employee' => $employee,
             'password' => $password
         ];
-
+        //this can be used to send the email of invitation to emoployee
         Mail::to($employee->email)->send(new AddEmployee($data));
         return response()->json([
             'employee' => $employee,
             'status' => 'ok'
         ]);
-    
     }
     public function editEmployee(Request $request , $id){
        $request->validate([
@@ -75,11 +76,11 @@ class EmployeeController extends Controller
             'gender' => 'required|string|max:32'
        ]);
      
-       $user = User::findOrFail($id);
-      $user->update($request->only('name','email','mobile_no','role','gender'));
-      $data = [
-        'employee' => $user,
-    ];
+        $user = User::findOrFail($id);
+        $user->update($request->only('name','email','mobile_no','role','gender'));
+        $data = [
+            'employee' => $user,
+        ];
         Mail::to($user->email)->send(new EditEmployee($data));
       return response()->json([
         'user' => $user,

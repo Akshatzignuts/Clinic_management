@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Appointment;
 use App\Http\Controllers\Controller;
+use App\Notifications\RescheduleNotification;
 use Exception;
 use Carbon\Carbon;
+use Twilio\Rest\Client;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
@@ -60,7 +63,8 @@ class AppointmentController extends Controller
         }
     }
     public function edit(Request $request, $id)
-    {
+    {   
+        
         $request->validate([
             'time' => 'required|date_format:H:i:s',
             'date' => 'required|date_format:Y-m-d',
@@ -68,20 +72,40 @@ class AppointmentController extends Controller
             'appointment_type' => 'required|string',
             'description' => 'nullable'
         ]);
-        try {
-            $appointment = Appointment::findOrFail($id);
-            $appointment->update($request->only('time', 'date', 'status', 'appointment_type', 'description'));
+        //This can be used to find the appointment by id 
+        $appointment = Appointment::findOrFail($id);
+        $originalTime = $appointment->time;
+        $originalDate = $appointment->date;
+        $user = $appointment->patient;
 
-            return response()->json([
-                'Appoinments' => $appointment,
-                'message' => 'All appointment is edited successfully',
-                'status' => 'ok'
-            ]);
-        } catch (Exception $error) {
-            return response()->json([
-                'error' => $error,
-            ]);
+          //This can be used to udate the appointment
+        $appointment->update($request->only('time', 'date', 'status', 'appointment_type', 'description'));
+          //This can be used to send message on whatsapp for rescheduled
+        if (($originalTime !== $request->time) || ($originalDate !== $request->date)) {
+            Notification::route('mail', $user->email)->notify(new RescheduleNotification());
+            $twilioSid = env('TWILIO_SID');
+            $twilioToken = env('TWILIO_AUTH_TOKEN');
+            $twilioWhatsAppNumber = env('TWILIO_WHATSAPP_NUMBER');
+            // $receientNumber = "whatsap:+918780868841";
+
+            $twilio = new Client($twilioSid, $twilioToken);
+            $message = $twilio->messages
+                ->create(
+                    "whatsapp:+918239239550", // to
+                    array(
+                        "from" => "whatsapp:+14155238886",
+                        "body" => "Their is some change in apointment schedule , The new time and date is " . $appointment->time . "and date is "
+                            . $appointment->date
+                    )
+                );
+            
         }
+        return response()->json([
+            'Appoinments' => $appointment,
+            'message' => 'Appointment edited successfully and notification sent successfully',
+            'status' => 'ok'
+        ]);
+
     }
     public function delete($id)
     {

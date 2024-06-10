@@ -16,7 +16,7 @@ class AdminController extends Controller
     public function index()
     {
         //Through we can the user role count
-        $user = User::where('role', 'user')->count();
+        $user = User::where('role_id', '3')->count();
         $appointmentsGroupedByDate = Appointment::select('date')
         ->get()
         ->groupBy(function($date) {

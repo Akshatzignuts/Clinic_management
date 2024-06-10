@@ -8,9 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class Medical_History extends Model
 {
     use HasFactory;
+
+    protected $casts = [
+        'medicine' => 'array'
+    ];
     protected $fillable = [
-     'disease',
-     'date',
-     'medicine',
+        'disease',
+        'date',
+        'medicine',
+        'patient_id',
+        
     ];
 }

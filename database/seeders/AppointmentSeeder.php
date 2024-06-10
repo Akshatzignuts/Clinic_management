@@ -16,14 +16,14 @@ class AppointmentSeeder extends Seeder
     {
             $appointments = [];
     
-            for ($i = 0; $i < 100; $i++) {
+            for ($i = 0; $i < 50; $i++) {
                 $appointments[] = [
                     'time' => $faker->time(),
                     'date' => $faker->date(),
                     'appointment_type' => $faker->randomElement(['general','operation','symtoms']),
                     'description' => $faker->sentence(),
                     'doctor_id' => $faker->numberBetween(3, 5),
-                    'patient_id' => $faker->numberBetween(6, 105),
+                    'patient_id' => $faker->numberBetween(6, 50),
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ];

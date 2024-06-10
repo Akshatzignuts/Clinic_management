@@ -7,6 +7,9 @@ use App\Models\Appointment;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use App\Notifications\RescheduleNotification;
+use Twilio\Rest\Client;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\Request;
 
 class PatientController extends Controller
@@ -17,7 +20,7 @@ class PatientController extends Controller
             $filter = $request->input('filter'); // get the status filter from the request
             $search = $request->input('search');
             $user = Auth::user();
-
+            //this can  be used to filter and search the patient 
             if ($search || $filter) {
                 $appointments = Appointment::where('doctor_id', $user->id)
                     ->whereHas('patient', function ($query) use ($search) {
@@ -28,13 +31,13 @@ class PatientController extends Controller
                     })
                     ->with('patient')
                     ->get();
-
+                    
                 $patients = $appointments->map(function ($appointment) {
                     return [
                         'patient' => $appointment->patient,
                         'appointments' => $appointment
                     ];
-                    
+
                 });
             } elseif ($filter) {
                 $appointments = Appointment::where('doctor_id', $user->id)
@@ -85,10 +88,10 @@ class PatientController extends Controller
                 'error' => $error,
             ]);
         }
-
     }
     public function view($id)
     {
+        
         $user = auth()->user();
         // Find the specific patient by ID
         $patients = Appointment::where('doctor_id', $user->id)
@@ -113,14 +116,38 @@ class PatientController extends Controller
             'appointment_type' => 'required|string',
             'description' => 'nullable'
         ]);
-
+        //this can be used to find the appointment id for edit 
         $appointment = Appointment::findOrFail($id);
-        $appointment->update($request->only('time','date','appointment_type','description'));
-        return response()->json([
-            'Appoinments' => $appointment,
-            'message' => 'Appointment is edited successfully',
-            'status' => 'ok'
-        ]); 
+        $originalTime = $appointment->time;
+        $originalDate = $appointment->date;
+        $user = $appointment->patient;
+
+        //this can be used to update the data of the appointment
+        $appointment->update($request->only('time', 'date', 'appointment_type', 'description'));
         
+        if (($originalTime !== $request->time) || ($originalDate !== $request->date)) {
+            Notification::route('mail', $user->email)->notify(new RescheduleNotification());
+            $twilioSid = env('TWILIO_SID');
+            $twilioToken = env('TWILIO_AUTH_TOKEN');
+            $twilioWhatsAppNumber = env('TWILIO_WHATSAPP_NUMBER');
+            // $receientNumber = "whatsap:+918780868841";
+
+            $twilio = new Client($twilioSid, $twilioToken);
+            $message = $twilio->messages
+                ->create(
+                    "whatsapp:+918239239550", // to
+                    array(
+                        "from" => "whatsapp:+14155238886",
+                        "body" => "Their is some change in apointment schedule , The new time and date is " . $appointment->time . "and date is "
+                            . $appointment->date
+                    )
+                );
+            return response()->json([
+                'Appoinments' => $appointment,
+                'message' => 'Appointment is edited successfully',
+                'status' => 'ok'
+            ]);
+        }
     }
+
 }

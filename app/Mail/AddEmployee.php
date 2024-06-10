@@ -27,7 +27,6 @@ class AddEmployee extends Mailable
         return $this->from('noreply@example.com')
             ->subject('Welcome, Invitation mail ')
             ->view('InviteEmail');
-        
     }
 
     /**

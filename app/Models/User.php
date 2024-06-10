@@ -23,8 +23,8 @@ class User extends Authenticatable
         'password',
         'gender',
         'mobile_no',
-        'role',
         'is_active',
+        'role',
         'status',
         'invitation_token'
     ];
